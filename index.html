@@ -1,0 +1,1425 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tek Katmanlı Bobin Endüktans Hesaplayıcısı</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f3;
+      --ink: #1f2521;
+      --muted: #5d675f;
+      --line: #cbd2ca;
+      --panel: #ffffff;
+      --accent: #0c6b58;
+      --accent-2: #bb4d24;
+      --soft: #e7f2ee;
+      --warn: #fff4df;
+      --shadow: 0 16px 45px rgba(35, 48, 40, .12);
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #eef3ee 0%, var(--bg) 44%, #ffffff 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 28px clamp(18px, 4vw, 46px) 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 4;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.55rem, 3vw, 2.45rem);
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 900px;
+      line-height: 1.5;
+    }
+
+    .language-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .language-switch select {
+      width: auto;
+      min-width: 132px;
+      background: #fff;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 28px));
+      margin: 22px auto 48px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(330px, .95fr);
+      gap: 18px;
+    }
+
+    .stack { display: grid; gap: 18px; }
+
+    section, .result-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    section { padding: 18px; }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f3f5f1;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-weight: 700;
+      min-height: 42px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 650;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      font: inherit;
+      color: var(--ink);
+      background: white;
+    }
+
+    input:focus, select:focus, button:focus-visible {
+      outline: 3px solid rgba(12,107,88,.22);
+      outline-offset: 1px;
+    }
+
+    .wide { grid-column: 1 / -1; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button.primary, button.secondary {
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      min-height: 42px;
+      padding: 0 14px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button.primary {
+      color: white;
+      background: var(--accent);
+    }
+
+    button.secondary {
+      color: var(--accent);
+      background: white;
+    }
+
+    .result-panel {
+      padding: 18px;
+      position: sticky;
+      top: 126px;
+      align-self: start;
+    }
+
+    .hero-value {
+      display: grid;
+      gap: 6px;
+      padding: 16px;
+      background: var(--soft);
+      border: 1px solid #bfdad2;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .hero-value span { color: var(--muted); font-weight: 700; }
+
+    .hero-value strong {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: 0;
+      line-height: 1;
+      color: var(--accent);
+      overflow-wrap: anywhere;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 78px;
+      display: grid;
+      align-content: center;
+      gap: 5px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .metric strong {
+      font-size: 1.15rem;
+      overflow-wrap: anywhere;
+    }
+
+    .note {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ebd29d;
+      background: var(--warn);
+      color: #6c4a10;
+      line-height: 1.45;
+      display: none;
+    }
+
+    .note.show { display: block; }
+
+    .formula {
+      display: grid;
+      gap: 12px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .formula code {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #f8faf7;
+      color: var(--ink);
+      font-family: Consolas, Monaco, monospace;
+      white-space: normal;
+    }
+
+    .hidden { display: none; }
+
+    footer {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto 28px;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 850px) {
+      header { position: static; }
+      main { grid-template-columns: 1fr; }
+      .result-panel { position: static; }
+    }
+
+    @media (max-width: 560px) {
+      .grid, .metrics, .tabs { grid-template-columns: 1fr; }
+      section, .result-panel { padding: 14px; }
+      .tab { min-height: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tek Katmanlı Bobin Endüktans Hesaplayıcısı</h1>
+    <p>Hava nüveli, tek katmanlı silindirik bobinler için Wheeler yaklaşımıyla endüktans, hedef endüktans için sarım sayısı, yaklaşık tel boyu ve DC direnç hesaplar.</p>
+    <label class="language-switch">Dil / Language
+      <select id="language-select" aria-label="Dil seçimi">
+        <option value="tr" selected>Türkçe</option>
+        <option value="en">English</option>
+      </select>
+    </label>
+  </header>
+
+  <main>
+    <div class="stack">
+      <section>
+        <div class="tabs" role="tablist" aria-label="Hesaplama modu">
+          <button class="tab active" id="tab-direct" type="button" role="tab" aria-selected="true">Endüktans Hesapla</button>
+          <button class="tab" id="tab-target" type="button" role="tab" aria-selected="false">Hedefe Göre Sarım</button>
+          <button class="tab" id="tab-compact" type="button" role="tab" aria-selected="false">Minimum Hacim</button>
+          <button class="tab" id="tab-rf" type="button" role="tab" aria-selected="false">RF Rezonans</button>
+        </div>
+
+        <form id="direct-form">
+          <h2>Ölçüleri gir, endüktansı bul</h2>
+          <div class="grid">
+            <label>Bobin oluşturma çapı
+              <input id="direct-diameter" type="number" min="0" step="any" value="2">
+            </label>
+            <label>Birim
+              <select id="direct-diameter-unit">
+                <option value="cm" selected>cm</option>
+                <option value="mm">mm</option>
+                <option value="m">m</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Bobin sarım boyu
+              <input id="direct-length" type="number" min="0" step="any" value="1">
+            </label>
+            <label>Birim
+              <select id="direct-length-unit">
+                <option value="cm" selected>cm</option>
+                <option value="mm">mm</option>
+                <option value="m">m</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Sarım sayısı
+              <input id="direct-turns" type="number" min="0" step="any" value="10">
+            </label>
+            <label>Tel çapı
+              <input id="direct-wire" type="number" min="0" step="any" value="0.8">
+            </label>
+            <label>Tel çapı birimi
+              <select id="direct-wire-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Tel malzemesi
+              <select id="direct-material">
+                <option value="copper" selected>Bakır</option>
+                <option value="aluminum">Alüminyum</option>
+                <option value="silver">Gümüş</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Hesapla</button>
+            <button class="secondary" type="button" id="direct-example">Örnek değerleri yükle</button>
+          </div>
+        </form>
+
+        <form id="target-form" class="hidden">
+          <h2>Hedef endüktans için sarım sayısını bul</h2>
+          <div class="grid">
+            <label>Hedef endüktans
+              <input id="target-l" type="number" min="0" step="any" value="10">
+            </label>
+            <label>Birim
+              <select id="target-l-unit">
+                <option value="uH" selected>µH</option>
+                <option value="mH">mH</option>
+                <option value="H">H</option>
+              </select>
+            </label>
+            <label>Bobin oluşturma çapı
+              <input id="target-diameter" type="number" min="0" step="any" value="3">
+            </label>
+            <label>Birim
+              <select id="target-diameter-unit">
+                <option value="cm" selected>cm</option>
+                <option value="mm">mm</option>
+                <option value="m">m</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Tel çapı
+              <input id="target-wire" type="number" min="0" step="any" value="0.8">
+            </label>
+            <label>Tel çapı birimi
+              <select id="target-wire-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Sarımlar arası boşluk
+              <input id="target-gap" type="number" min="0" step="any" value="0">
+            </label>
+            <label>Boşluk birimi
+              <select id="target-gap-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Sarım Sayısını Hesapla</button>
+            <button class="secondary" type="button" id="target-example">Örnek değerleri yükle</button>
+          </div>
+        </form>
+
+        <form id="compact-form" class="hidden">
+          <h2>En küçük hacimli uygun bobini bul</h2>
+          <div class="grid">
+            <label>Hedef endüktans
+              <input id="compact-l" type="number" min="0" step="any" value="10">
+            </label>
+            <label>Birim
+              <select id="compact-l-unit">
+                <option value="uH" selected>µH</option>
+                <option value="mH">mH</option>
+                <option value="H">H</option>
+              </select>
+            </label>
+            <label>Tel çapı
+              <input id="compact-wire" type="number" min="0" step="any" value="0.8">
+            </label>
+            <label>Tel çapı birimi
+              <select id="compact-wire-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Sarımlar arası boşluk
+              <input id="compact-gap" type="number" min="0" step="any" value="0">
+            </label>
+            <label>Boşluk birimi
+              <select id="compact-gap-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Minimum bobin oluşturma çapı
+              <input id="compact-min-diameter" type="number" min="0" step="any" value="10">
+            </label>
+            <label>Çap birimi
+              <select id="compact-min-diameter-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Maksimum boy / çap oranı
+              <input id="compact-max-ratio" type="number" min="0" step="any" value="3">
+            </label>
+            <label>Tarama hassasiyeti
+              <select id="compact-precision">
+                <option value="fine" selected>İnce</option>
+                <option value="normal">Normal</option>
+                <option value="coarse">Hızlı</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">En Küçük Hacmi Bul</button>
+            <button class="secondary" type="button" id="compact-example">Örnek değerleri yükle</button>
+          </div>
+        </form>
+
+        <form id="rf-form" class="hidden">
+          <h2>Elektrot kapasitansına göre RF rezonans ve tap hesabı</h2>
+          <div class="grid">
+            <label>Elektrot kapasitansı
+              <input id="rf-capacitance" type="number" min="0" step="any" value="100">
+            </label>
+            <label>Kapasitans birimi
+              <select id="rf-capacitance-unit">
+                <option value="pF" selected>pF</option>
+                <option value="nF">nF</option>
+                <option value="uF">µF</option>
+                <option value="F">F</option>
+              </select>
+            </label>
+            <label>Rezonans frekansı
+              <input id="rf-frequency" type="number" min="0" step="any" value="13.56">
+            </label>
+            <label>Frekans birimi
+              <select id="rf-frequency-unit">
+                <option value="MHz" selected>MHz</option>
+                <option value="kHz">kHz</option>
+                <option value="Hz">Hz</option>
+              </select>
+            </label>
+            <label>Tel çapı
+              <input id="rf-wire" type="number" min="0" step="any" value="0.8">
+            </label>
+            <label>Tel çapı birimi
+              <select id="rf-wire-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Sarımlar arası boşluk
+              <input id="rf-gap" type="number" min="0" step="any" value="0">
+            </label>
+            <label>Boşluk birimi
+              <select id="rf-gap-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Minimum bobin oluşturma çapı
+              <input id="rf-min-diameter" type="number" min="0" step="any" value="10">
+            </label>
+            <label>Çap birimi
+              <select id="rf-min-diameter-unit">
+                <option value="mm" selected>mm</option>
+                <option value="cm">cm</option>
+                <option value="in">inç</option>
+              </select>
+            </label>
+            <label>Maksimum boy / çap oranı
+              <input id="rf-max-ratio" type="number" min="0" step="any" value="3">
+            </label>
+            <label>Tarama hassasiyeti
+              <select id="rf-precision">
+                <option value="fine" selected>İnce</option>
+                <option value="normal">Normal</option>
+                <option value="coarse">Hızlı</option>
+              </select>
+            </label>
+            <label>Tank empedansı
+              <input id="rf-tank-z" type="number" min="0" step="any" value="1000">
+            </label>
+            <label>Ropt empedansı
+              <input id="rf-ropt" type="number" min="0" step="any" value="50">
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">RF Tasarımını Hesapla</button>
+            <button class="secondary" type="button" id="rf-example">Örnek değerleri yükle</button>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <h2>Çap ölçüsü ve formüller</h2>
+        <div class="formula">
+          <p><strong>Çap alanına girilecek değer</strong>, teli üzerine sardığınız mandrel/karkas ölçüsüdür; bu programda buna <strong>bobin oluşturma çapı</strong> denir. Program, girdiğiniz tel çapını kullanarak Wheeler formülündeki tel merkez hattı çapını arka planda <strong>D = bobin oluşturma çapı + tel çapı</strong> olarak hesaplar.</p>
+          <p><strong>Wheeler tek katmanlı hava nüveli bobin yaklaşımı</strong>. Çap ve bobin boyu santimetre girildiğinde sonuç mikrohenry cinsindendir.</p>
+          <code>L(µH) = N² × D² / (45.72 × D + 101.6 × l)</code>
+          <p>Burada <strong>D</strong> tel merkez hattı çapı, <strong>l</strong> sarımın kapladığı bobin boyu, <strong>N</strong> sarım sayısıdır. Aynı formül inç için <code>L(µH) = N² × D² / (18 × D + 40 × l)</code> biçimindedir.</p>
+          <p>Hedef modunda bitişik sarım varsayımıyla bobin boyu <strong>l = N × (tel çapı + boşluk)</strong> alınır ve ikinci dereceden denklem çözülür.</p>
+          <p>Minimum hacim modunda aynı hedef hesabı çok sayıda bobin oluşturma çapı için denenir; fiziksel dış hacim <code>V = π × ((oluşturma çapı + 2 × tel çapı) / 2)² × l</code> ile seçilir.</p>
+          <p>RF rezonans modunda elektrot kapasitansı ve frekanstan <code>L = 1 / ((2πf)² × C)</code> hesaplanır. <strong>Elektrot - N2 - RF giriş - N1 - GND</strong> bağlantısında rezonans bobini toplam sarımdır: <code>Ntotal = N1 + N2</code>. Tap hesabında <code>N1 / Ntotal = √(Ropt / Ztank)</code> kabul edilir.</p>
+        </div>
+      </section>
+    </div>
+
+    <aside class="result-panel" aria-live="polite">
+      <h2>Sonuç</h2>
+      <div class="hero-value">
+        <span id="main-label">Endüktans</span>
+        <strong id="main-result">2.071 µH</strong>
+      </div>
+      <div class="metrics" id="metrics"></div>
+      <div class="note" id="note"></div>
+    </aside>
+  </main>
+
+  <footer>
+    Wheeler formülü yaklaşık bir tasarım hesabıdır; ferrit/metal nüve, yüksek frekans parazitikleri, tel izolasyonu, bobin karkası ve çevredeki metal parçalar sonucu değiştirebilir.
+  </footer>
+
+  <script>
+    const resistivity = {
+      copper: 1.724e-8,
+      aluminum: 2.82e-8,
+      silver: 1.59e-8
+    };
+
+    let currentLang = 'tr';
+
+    const i18n = {
+      tr: {
+        locale: 'tr-TR',
+        title: 'Tek Katmanlı Bobin Endüktans Hesaplayıcısı',
+        intro: 'Hava nüveli, tek katmanlı silindirik bobinler için Wheeler yaklaşımıyla endüktans, hedef endüktans için sarım sayısı, yaklaşık tel boyu ve DC direnç hesaplar.',
+        languageLabel: 'Dil / Language',
+        languageAria: 'Dil seçimi',
+        tabsAria: 'Hesaplama modu',
+        tabs: {
+          direct: 'Endüktans Hesapla',
+          target: 'Hedefe Göre Sarım',
+          compact: 'Minimum Hacim',
+          rf: 'RF Rezonans'
+        },
+        headings: {
+          direct: 'Ölçüleri gir, endüktansı bul',
+          target: 'Hedef endüktans için sarım sayısını bul',
+          compact: 'En küçük hacimli uygun bobini bul',
+          rf: 'Elektrot kapasitansına göre RF rezonans ve tap hesabı',
+          formulas: 'Çap ölçüsü ve formüller',
+          result: 'Sonuç'
+        },
+        labels: {
+          coilDiameter: 'Bobin oluşturma çapı',
+          unit: 'Birim',
+          windingLength: 'Bobin sarım boyu',
+          turns: 'Sarım sayısı',
+          wireDiameter: 'Tel çapı',
+          wireUnit: 'Tel çapı birimi',
+          material: 'Tel malzemesi',
+          targetL: 'Hedef endüktans',
+          gap: 'Sarımlar arası boşluk',
+          gapUnit: 'Boşluk birimi',
+          minDiameter: 'Minimum bobin oluşturma çapı',
+          diameterUnit: 'Çap birimi',
+          maxRatio: 'Maksimum boy / çap oranı',
+          precision: 'Tarama hassasiyeti',
+          capacitance: 'Elektrot kapasitansı',
+          capacitanceUnit: 'Kapasitans birimi',
+          frequency: 'Rezonans frekansı',
+          frequencyUnit: 'Frekans birimi',
+          tankZ: 'Tank empedansı',
+          ropt: 'Ropt empedansı'
+        },
+        buttons: {
+          calculate: 'Hesapla',
+          loadExample: 'Örnek değerleri yükle',
+          target: 'Sarım Sayısını Hesapla',
+          compact: 'En Küçük Hacmi Bul',
+          rf: 'RF Tasarımını Hesapla'
+        },
+        options: {
+          inch: 'inç',
+          copper: 'Bakır',
+          aluminum: 'Alüminyum',
+          silver: 'Gümüş',
+          fine: 'İnce',
+          normal: 'Normal',
+          coarse: 'Hızlı'
+        },
+        formulas: `
+          <p><strong>Çap alanına girilecek değer</strong>, teli üzerine sardığınız mandrel/karkas ölçüsüdür; bu programda buna <strong>bobin oluşturma çapı</strong> denir. Program, girdiğiniz tel çapını kullanarak Wheeler formülündeki tel merkez hattı çapını arka planda <strong>D = bobin oluşturma çapı + tel çapı</strong> olarak hesaplar.</p>
+          <p><strong>Wheeler tek katmanlı hava nüveli bobin yaklaşımı</strong>. Çap ve bobin boyu santimetre girildiğinde sonuç mikrohenry cinsindendir.</p>
+          <code>L(µH) = N² × D² / (45.72 × D + 101.6 × l)</code>
+          <p>Burada <strong>D</strong> tel merkez hattı çapı, <strong>l</strong> sarımın kapladığı bobin boyu, <strong>N</strong> sarım sayısıdır. Aynı formül inç için <code>L(µH) = N² × D² / (18 × D + 40 × l)</code> biçimindedir.</p>
+          <p>Hedef modunda bitişik sarım varsayımıyla bobin boyu <strong>l = N × (tel çapı + boşluk)</strong> alınır ve ikinci dereceden denklem çözülür.</p>
+          <p>Minimum hacim modunda aynı hedef hesabı çok sayıda bobin oluşturma çapı için denenir; fiziksel dış hacim <code>V = π × ((oluşturma çapı + 2 × tel çapı) / 2)² × l</code> ile seçilir.</p>
+          <p>RF rezonans modunda elektrot kapasitansı ve frekanstan <code>L = 1 / ((2πf)² × C)</code> hesaplanır. <strong>Elektrot - N2 - RF giriş - N1 - GND</strong> bağlantısında rezonans bobini toplam sarımdır: <code>Ntotal = N1 + N2</code>. Tap hesabında <code>N1 / Ntotal = √(Ropt / Ztank)</code> kabul edilir.</p>
+        `,
+        footer: 'Wheeler formülü yaklaşık bir tasarım hesabıdır; ferrit/metal nüve, yüksek frekans parazitikleri, tel izolasyonu, bobin karkası ve çevredeki metal parçalar sonucu değiştirebilir.',
+        resultLabels: {
+          inductance: 'Endüktans',
+          requiredInput: 'Girdi gerekli',
+          requiredTurns: 'Gerekli sarım',
+          candidate: 'Uygun aday',
+          notFound: 'Bulunamadı',
+          suggestedDiameter: 'Önerilen oluşturma çapı',
+          requiredL: 'Gerekli L'
+        },
+        metrics: {
+          microHenry: 'Mikrohenry',
+          coilDiameter: 'Bobin oluşturma çapı',
+          formulaDiameter: 'Formül çapı',
+          outerDiameter: 'Dıştan dışa çap',
+          wireLength: 'Yaklaşık tel boyu',
+          pitch: 'Sarım adımı',
+          dcResistance: 'Yaklaşık DC direnç',
+          practicalTurns: 'Pratik sarım',
+          coilLength: 'Bobin boyu',
+          practicalLength: 'Pratik bobin boyu',
+          practicalResult: 'Pratik sonuç',
+          practicalWireLength: 'Pratik tel boyu',
+          turnCount: 'Sarım sayısı',
+          calculatedInductance: 'Hesaplanan endüktans',
+          volume: 'Bobin hacmi',
+          ratio: 'Boy / çap',
+          reactance: 'Kapasitif/indüktif reaktans',
+          characteristicZ: 'LC karakteristik Z',
+          totalTurns: 'Toplam sarım Ntotal',
+          practicalL: 'Pratik L',
+          tapRatio: 'Tap oranı N1/Ntotal',
+          impedanceRatio: 'Empedans dönüşüm oranı',
+          n1: 'N1: GND - RF giriş',
+          n2: 'N2: RF giriş - elektrot'
+        },
+        notes: {
+          directRequired: 'Bobin oluşturma çapı, tel çapı, bobin boyu ve sarım sayısı sıfırdan büyük olmalıdır.',
+          directTooManyTurns: (length, turns) => `Bu tel çapıyla ${length} cm bobin boyuna bitişik sarımda yaklaşık ${turns} tur sığar. Girilen sarım için daha ince tel veya daha uzun bobin gerekebilir.`,
+          targetRequired: 'Hedef endüktans, bobin oluşturma çapı ve tel çapı sıfırdan büyük olmalı; boşluk negatif olamaz.',
+          targetResult: (actual) => `Hedef hesabı, sarımların tek katmanda ve adımın tel çapı + boşluk kadar olduğu varsayımıyla yapılır. Tam sayı sarımda sonuç ${actual} µH olur.`,
+          compactRequired: 'Hedef endüktans, tel çapı, minimum bobin oluşturma çapı ve boy/çap oranı sıfırdan büyük olmalı; boşluk negatif olamaz.',
+          compactNotFound: 'Bu sınırlar içinde tek katmanlı uygun bobin bulunamadı. Maksimum boy/çap oranını veya minimum çapı artırmayı deneyin.',
+          compactResult: (minDiameter, maxRatio) => `En küçük hacim araması ${minDiameter} mm ve üzerindeki bobin oluşturma çaplarında, dıştan dışa boy/çap oranı en fazla ${maxRatio} olacak şekilde yapıldı. Formül çapı arka planda oluşturma çapı + tel çapı olarak alınır.`,
+          rfRequired: 'Kapasitans, frekans, tel çapı, minimum bobin oluşturma çapı ve boy/çap oranı sıfırdan büyük olmalıdır.',
+          negativeGap: 'Sarımlar arası boşluk negatif olamaz.',
+          rfBase: 'RF tasarım hesabı ideal LC rezonansı ve tek katmanlı Wheeler bobin yaklaşımıdır; elektrot kayıpları, plazma/yük değişimi, parazitik kapasitanslar ve coil ESR sonucu etkiler.',
+          tapImpossible: (ropt, tankZ, ratio) => ` Ropt (${ropt} Ω) tank empedansından (${tankZ} Ω) büyük olduğu için klasik bobin tapı ile bu yönde dönüşüm yapılamaz; oran ${ratio} çıkar. Bu durumda bağlantı yönü veya eşleme ağı tekrar düşünülmelidir.`,
+          tapResult: (reflected) => ` Tap hesabı Ropt değerinin GND-RF giriş arasındaki N1 kısmına bağlanıp toplam bobine ${reflected} Ω olarak yansıdığı varsayımıyla yapılmıştır.`,
+          tapRequired: ' Tap oranı için tank empedansı ve Ropt sıfırdan büyük girilmelidir.',
+          rfNoCoil: ' Verilen minimum hacim sınırlarında uygun bobin bulunamadı; minimum oluşturma çapını veya maksimum boy/çap oranını artırmayı deneyin.'
+        },
+        turnsUnit: 'tur'
+      },
+      en: {
+        locale: 'en-US',
+        title: 'Single-Layer Coil Inductance Calculator',
+        intro: 'Calculates inductance, required turns for a target inductance, approximate wire length, and DC resistance for single-layer cylindrical air-core coils using Wheeler’s approximation.',
+        languageLabel: 'Language',
+        languageAria: 'Language selection',
+        tabsAria: 'Calculation mode',
+        tabs: {
+          direct: 'Calculate Inductance',
+          target: 'Turns from Target',
+          compact: 'Minimum Volume',
+          rf: 'RF Resonance'
+        },
+        headings: {
+          direct: 'Enter dimensions and find inductance',
+          target: 'Find the turn count for a target inductance',
+          compact: 'Find the smallest suitable coil',
+          rf: 'RF resonance and tap calculation from electrode capacitance',
+          formulas: 'Diameter reference and formulas',
+          result: 'Result'
+        },
+        labels: {
+          coilDiameter: 'Coil former diameter',
+          unit: 'Unit',
+          windingLength: 'Winding length',
+          turns: 'Number of turns',
+          wireDiameter: 'Wire diameter',
+          wireUnit: 'Wire diameter unit',
+          material: 'Wire material',
+          targetL: 'Target inductance',
+          gap: 'Gap between turns',
+          gapUnit: 'Gap unit',
+          minDiameter: 'Minimum coil former diameter',
+          diameterUnit: 'Diameter unit',
+          maxRatio: 'Maximum length / diameter ratio',
+          precision: 'Search precision',
+          capacitance: 'Electrode capacitance',
+          capacitanceUnit: 'Capacitance unit',
+          frequency: 'Resonance frequency',
+          frequencyUnit: 'Frequency unit',
+          tankZ: 'Tank impedance',
+          ropt: 'Ropt impedance'
+        },
+        buttons: {
+          calculate: 'Calculate',
+          loadExample: 'Load example values',
+          target: 'Calculate Turn Count',
+          compact: 'Find Smallest Volume',
+          rf: 'Calculate RF Design'
+        },
+        options: {
+          inch: 'inch',
+          copper: 'Copper',
+          aluminum: 'Aluminum',
+          silver: 'Silver',
+          fine: 'Fine',
+          normal: 'Normal',
+          coarse: 'Fast'
+        },
+        formulas: `
+          <p><strong>The diameter field</strong> is the mandrel/former diameter you wind the wire on. In this app it is called the <strong>coil former diameter</strong>. The app uses the entered wire diameter to calculate Wheeler’s center-line diameter in the background as <strong>D = coil former diameter + wire diameter</strong>.</p>
+          <p><strong>Wheeler single-layer air-core coil approximation</strong>. When diameter and winding length are in centimeters, the result is in microhenries.</p>
+          <code>L(µH) = N² × D² / (45.72 × D + 101.6 × l)</code>
+          <p>Here <strong>D</strong> is the wire center-line diameter, <strong>l</strong> is the winding length, and <strong>N</strong> is the number of turns. The same formula in inches is <code>L(µH) = N² × D² / (18 × D + 40 × l)</code>.</p>
+          <p>In target mode, the winding length is assumed to be <strong>l = N × (wire diameter + gap)</strong>, then the quadratic equation is solved.</p>
+          <p>Minimum volume mode repeats the target calculation over many coil former diameters and chooses the physical outside volume with <code>V = π × ((former diameter + 2 × wire diameter) / 2)² × l</code>.</p>
+          <p>RF resonance mode calculates <code>L = 1 / ((2πf)² × C)</code> from electrode capacitance and frequency. For the <strong>Electrode - N2 - RF input - N1 - GND</strong> connection, the resonant coil is the total turn count: <code>Ntotal = N1 + N2</code>. The tap estimate assumes <code>N1 / Ntotal = √(Ropt / Ztank)</code>.</p>
+        `,
+        footer: 'Wheeler’s formula is an approximate design calculation; ferrite/metal cores, high-frequency parasitics, wire insulation, the coil former, and nearby metal parts can change the result.',
+        resultLabels: {
+          inductance: 'Inductance',
+          requiredInput: 'Input required',
+          requiredTurns: 'Required turns',
+          candidate: 'Suitable candidate',
+          notFound: 'Not found',
+          suggestedDiameter: 'Suggested former diameter',
+          requiredL: 'Required L'
+        },
+        metrics: {
+          microHenry: 'Microhenry',
+          coilDiameter: 'Coil former diameter',
+          formulaDiameter: 'Formula diameter',
+          outerDiameter: 'Outside diameter',
+          wireLength: 'Approx. wire length',
+          pitch: 'Turn pitch',
+          dcResistance: 'Approx. DC resistance',
+          practicalTurns: 'Practical turns',
+          coilLength: 'Coil length',
+          practicalLength: 'Practical coil length',
+          practicalResult: 'Practical result',
+          practicalWireLength: 'Practical wire length',
+          turnCount: 'Turn count',
+          calculatedInductance: 'Calculated inductance',
+          volume: 'Coil volume',
+          ratio: 'Length / diameter',
+          reactance: 'Capacitive/inductive reactance',
+          characteristicZ: 'LC characteristic Z',
+          totalTurns: 'Total turns Ntotal',
+          practicalL: 'Practical L',
+          tapRatio: 'Tap ratio N1/Ntotal',
+          impedanceRatio: 'Impedance transformation ratio',
+          n1: 'N1: GND - RF input',
+          n2: 'N2: RF input - electrode'
+        },
+        notes: {
+          directRequired: 'Coil former diameter, wire diameter, winding length, and turn count must be greater than zero.',
+          directTooManyTurns: (length, turns) => `With this wire diameter, about ${turns} close-wound turns fit into a ${length} cm winding length. The entered turn count may need thinner wire or a longer coil.`,
+          targetRequired: 'Target inductance, coil former diameter, and wire diameter must be greater than zero; gap cannot be negative.',
+          targetResult: (actual) => `The target calculation assumes a single layer and a pitch equal to wire diameter + gap. With an integer turn count, the result is ${actual} µH.`,
+          compactRequired: 'Target inductance, wire diameter, minimum coil former diameter, and length/diameter ratio must be greater than zero; gap cannot be negative.',
+          compactNotFound: 'No suitable single-layer coil was found within these limits. Try increasing the maximum length/diameter ratio or the minimum diameter.',
+          compactResult: (minDiameter, maxRatio) => `The minimum-volume search was run for coil former diameters of ${minDiameter} mm and above, with an outside length/diameter ratio of at most ${maxRatio}. Formula diameter is calculated in the background as former diameter + wire diameter.`,
+          rfRequired: 'Capacitance, frequency, wire diameter, minimum coil former diameter, and length/diameter ratio must be greater than zero.',
+          negativeGap: 'Gap between turns cannot be negative.',
+          rfBase: 'The RF design calculation uses ideal LC resonance and the single-layer Wheeler coil approximation; electrode losses, plasma/load changes, parasitic capacitance, and coil ESR affect the result.',
+          tapImpossible: (ropt, tankZ, ratio) => ` Ropt (${ropt} Ω) is greater than tank impedance (${tankZ} Ω), so a classic coil tap cannot transform in this direction; the ratio is ${ratio}. Reconsider the connection direction or matching network.`,
+          tapResult: (reflected) => ` The tap estimate assumes Ropt is connected to the N1 section between GND and RF input and is reflected to ${reflected} Ω across the full coil.`,
+          tapRequired: ' Tank impedance and Ropt must be greater than zero for the tap ratio.',
+          rfNoCoil: ' No suitable coil was found within the minimum-volume limits; try increasing the minimum former diameter or maximum length/diameter ratio.'
+        },
+        turnsUnit: 'turns'
+      }
+    };
+
+    const materialName = {
+      copper: () => i18n[currentLang].options.copper,
+      aluminum: () => i18n[currentLang].options.aluminum,
+      silver: () => i18n[currentLang].options.silver
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const textBindings = [
+      ['header h1', 'title'],
+      ['header p', 'intro'],
+      ['#tab-direct', 'tabs.direct'],
+      ['#tab-target', 'tabs.target'],
+      ['#tab-compact', 'tabs.compact'],
+      ['#tab-rf', 'tabs.rf'],
+      ['#direct-form h2', 'headings.direct'],
+      ['#target-form h2', 'headings.target'],
+      ['#compact-form h2', 'headings.compact'],
+      ['#rf-form h2', 'headings.rf'],
+      ['section:nth-of-type(2) h2', 'headings.formulas'],
+      ['.result-panel h2', 'headings.result'],
+      ['#direct-form .primary', 'buttons.calculate'],
+      ['#direct-example', 'buttons.loadExample'],
+      ['#target-form .primary', 'buttons.target'],
+      ['#target-example', 'buttons.loadExample'],
+      ['#compact-form .primary', 'buttons.compact'],
+      ['#compact-example', 'buttons.loadExample'],
+      ['#rf-form .primary', 'buttons.rf'],
+      ['#rf-example', 'buttons.loadExample'],
+      ['footer', 'footer']
+    ];
+
+    const labelBindings = {
+      'direct-diameter': 'labels.coilDiameter',
+      'direct-diameter-unit': 'labels.unit',
+      'direct-length': 'labels.windingLength',
+      'direct-length-unit': 'labels.unit',
+      'direct-turns': 'labels.turns',
+      'direct-wire': 'labels.wireDiameter',
+      'direct-wire-unit': 'labels.wireUnit',
+      'direct-material': 'labels.material',
+      'target-l': 'labels.targetL',
+      'target-l-unit': 'labels.unit',
+      'target-diameter': 'labels.coilDiameter',
+      'target-diameter-unit': 'labels.unit',
+      'target-wire': 'labels.wireDiameter',
+      'target-wire-unit': 'labels.wireUnit',
+      'target-gap': 'labels.gap',
+      'target-gap-unit': 'labels.gapUnit',
+      'compact-l': 'labels.targetL',
+      'compact-l-unit': 'labels.unit',
+      'compact-wire': 'labels.wireDiameter',
+      'compact-wire-unit': 'labels.wireUnit',
+      'compact-gap': 'labels.gap',
+      'compact-gap-unit': 'labels.gapUnit',
+      'compact-min-diameter': 'labels.minDiameter',
+      'compact-min-diameter-unit': 'labels.diameterUnit',
+      'compact-max-ratio': 'labels.maxRatio',
+      'compact-precision': 'labels.precision',
+      'rf-capacitance': 'labels.capacitance',
+      'rf-capacitance-unit': 'labels.capacitanceUnit',
+      'rf-frequency': 'labels.frequency',
+      'rf-frequency-unit': 'labels.frequencyUnit',
+      'rf-wire': 'labels.wireDiameter',
+      'rf-wire-unit': 'labels.wireUnit',
+      'rf-gap': 'labels.gap',
+      'rf-gap-unit': 'labels.gapUnit',
+      'rf-min-diameter': 'labels.minDiameter',
+      'rf-min-diameter-unit': 'labels.diameterUnit',
+      'rf-max-ratio': 'labels.maxRatio',
+      'rf-precision': 'labels.precision',
+      'rf-tank-z': 'labels.tankZ',
+      'rf-ropt': 'labels.ropt'
+    };
+
+    const optionBindings = {
+      'option[value="in"]': 'options.inch',
+      '#direct-material option[value="copper"]': 'options.copper',
+      '#direct-material option[value="aluminum"]': 'options.aluminum',
+      '#direct-material option[value="silver"]': 'options.silver',
+      '#compact-precision option[value="fine"], #rf-precision option[value="fine"]': 'options.fine',
+      '#compact-precision option[value="normal"], #rf-precision option[value="normal"]': 'options.normal',
+      '#compact-precision option[value="coarse"], #rf-precision option[value="coarse"]': 'options.coarse'
+    };
+
+    function tr(path) {
+      return path.split('.').reduce((value, key) => value[key], i18n[currentLang]);
+    }
+
+    function setLabelText(inputId, text) {
+      const label = $(inputId)?.closest('label');
+      if (!label) return;
+      const textNode = Array.from(label.childNodes).find((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+      if (textNode) textNode.textContent = `${text}\n              `;
+    }
+
+    function activeMode() {
+      if (!$('target-form').classList.contains('hidden')) return 'target';
+      if (!$('compact-form').classList.contains('hidden')) return 'compact';
+      if (!$('rf-form').classList.contains('hidden')) return 'rf';
+      return 'direct';
+    }
+
+    function recalculateActive() {
+      const mode = activeMode();
+      if (mode === 'direct') calculateDirect();
+      if (mode === 'target') calculateTarget();
+      if (mode === 'compact') calculateCompact();
+      if (mode === 'rf') calculateRf();
+    }
+
+    function applyTranslations() {
+      const strings = i18n[currentLang];
+      document.documentElement.lang = currentLang;
+      document.title = strings.title;
+      $('language-select').setAttribute('aria-label', strings.languageAria);
+      document.querySelector('.tabs').setAttribute('aria-label', strings.tabsAria);
+      setLabelText('language-select', strings.languageLabel);
+      textBindings.forEach(([selector, path]) => {
+        const element = document.querySelector(selector);
+        if (element) element.textContent = tr(path);
+      });
+      Object.entries(labelBindings).forEach(([id, path]) => setLabelText(id, tr(path)));
+      Object.entries(optionBindings).forEach(([selector, path]) => {
+        document.querySelectorAll(selector).forEach((option) => { option.textContent = tr(path); });
+      });
+      document.querySelector('.formula').innerHTML = strings.formulas;
+      recalculateActive();
+    }
+
+    function lengthToCm(value, unit) {
+      const v = Number(value);
+      if (!Number.isFinite(v)) return NaN;
+      if (unit === 'mm') return v / 10;
+      if (unit === 'm') return v * 100;
+      if (unit === 'in') return v * 2.54;
+      return v;
+    }
+
+    function lengthToMeters(value, unit) {
+      return lengthToCm(value, unit) / 100;
+    }
+
+    function inductanceToMicroHenry(value, unit) {
+      const v = Number(value);
+      if (!Number.isFinite(v)) return NaN;
+      if (unit === 'mH') return v * 1000;
+      if (unit === 'H') return v * 1000000;
+      return v;
+    }
+
+    function capacitanceToFarad(value, unit) {
+      const v = Number(value);
+      if (!Number.isFinite(v)) return NaN;
+      if (unit === 'pF') return v * 1e-12;
+      if (unit === 'nF') return v * 1e-9;
+      if (unit === 'uF') return v * 1e-6;
+      return v;
+    }
+
+    function frequencyToHz(value, unit) {
+      const v = Number(value);
+      if (!Number.isFinite(v)) return NaN;
+      if (unit === 'MHz') return v * 1e6;
+      if (unit === 'kHz') return v * 1e3;
+      return v;
+    }
+
+    function resonanceInductanceMicroHenry(capacitanceF, frequencyHz) {
+      const omega = 2 * Math.PI * frequencyHz;
+      return (1 / (omega * omega * capacitanceF)) * 1000000;
+    }
+
+    function rfReactanceOhm(capacitanceF, frequencyHz) {
+      return 1 / (2 * Math.PI * frequencyHz * capacitanceF);
+    }
+
+    function wheelerMicroHenry(diameterCm, coilLengthCm, turns) {
+      return (turns * turns * diameterCm * diameterCm) / (45.72 * diameterCm + 101.6 * coilLengthCm);
+    }
+
+    function solveCloseWoundTurns(targetMicroHenry, diameterCm, pitchCm) {
+      const a = diameterCm * diameterCm;
+      const b = -targetMicroHenry * 101.6 * pitchCm;
+      const c = -targetMicroHenry * 45.72 * diameterCm;
+      return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+    }
+
+    function helicalWireLengthMeters(diameterCm, pitchCm, turns) {
+      const circumferenceCm = Math.PI * diameterCm;
+      return (Math.sqrt(circumferenceCm * circumferenceCm + pitchCm * pitchCm) * turns) / 100;
+    }
+
+    function dcResistanceOhm(wireLengthM, wireDiameterM, material) {
+      if (wireDiameterM <= 0) return NaN;
+      const area = Math.PI * Math.pow(wireDiameterM / 2, 2);
+      return resistivity[material] * wireLengthM / area;
+    }
+
+    function coilVolumeCm3(outerDiameterCm, coilLengthCm) {
+      return Math.PI * Math.pow(outerDiameterCm / 2, 2) * coilLengthCm;
+    }
+
+    function fmt(value, digits = 4) {
+      if (!Number.isFinite(value)) return '-';
+      const locale = i18n[currentLang].locale;
+      if (Math.abs(value) >= 1000) return value.toLocaleString(locale, { maximumFractionDigits: 2 });
+      if (Math.abs(value) >= 100) return value.toLocaleString(locale, { maximumFractionDigits: 2 });
+      if (Math.abs(value) >= 10) return value.toLocaleString(locale, { maximumFractionDigits: 3 });
+      return value.toLocaleString(locale, { maximumSignificantDigits: digits });
+    }
+
+    function bestInductanceUnit(microHenry) {
+      if (microHenry >= 1000000) return [microHenry / 1000000, 'H'];
+      if (microHenry >= 1000) return [microHenry / 1000, 'mH'];
+      return [microHenry, 'µH'];
+    }
+
+    function setMetrics(items) {
+      $('metrics').innerHTML = items.map((item) => `
+        <div class="metric">
+          <span>${item.label}</span>
+          <strong>${item.value}</strong>
+        </div>
+      `).join('');
+    }
+
+    function setNote(message) {
+      $('note').textContent = message || '';
+      $('note').classList.toggle('show', Boolean(message));
+    }
+
+    function requirePositive(values) {
+      return values.every((value) => Number.isFinite(value) && value > 0);
+    }
+
+    function calculateDirect(event) {
+      event?.preventDefault();
+      const bareDiameterCm = lengthToCm($('direct-diameter').value, $('direct-diameter-unit').value);
+      const coilLengthCm = lengthToCm($('direct-length').value, $('direct-length-unit').value);
+      const turns = Number($('direct-turns').value);
+      const wireDiameterM = lengthToMeters($('direct-wire').value, $('direct-wire-unit').value);
+      const wireDiameterCm = wireDiameterM * 100;
+      const centerDiameterCm = bareDiameterCm + wireDiameterCm;
+      const outerDiameterCm = bareDiameterCm + (2 * wireDiameterCm);
+      const material = $('direct-material').value;
+
+      if (!requirePositive([bareDiameterCm, coilLengthCm, turns, wireDiameterCm])) {
+        $('main-result').textContent = tr('resultLabels.requiredInput');
+        setMetrics([]);
+        setNote(tr('notes.directRequired'));
+        return;
+      }
+
+      const microHenry = wheelerMicroHenry(centerDiameterCm, coilLengthCm, turns);
+      const [displayValue, displayUnit] = bestInductanceUnit(microHenry);
+      const pitchCm = coilLengthCm / turns;
+      const wireLengthM = helicalWireLengthMeters(centerDiameterCm, pitchCm, turns);
+      const resistance = dcResistanceOhm(wireLengthM, wireDiameterM, material);
+      const maxCloseTurns = wireDiameterCm > 0 ? coilLengthCm / wireDiameterCm : NaN;
+
+      $('main-label').textContent = tr('resultLabels.inductance');
+      $('main-result').textContent = `${fmt(displayValue)} ${displayUnit}`;
+      setMetrics([
+        { label: tr('metrics.microHenry'), value: `${fmt(microHenry)} µH` },
+        { label: tr('metrics.coilDiameter'), value: `${fmt(bareDiameterCm * 10)} mm` },
+        { label: tr('metrics.formulaDiameter'), value: `${fmt(centerDiameterCm * 10)} mm` },
+        { label: tr('metrics.outerDiameter'), value: `${fmt(outerDiameterCm * 10)} mm` },
+        { label: tr('metrics.wireLength'), value: `${fmt(wireLengthM)} m` },
+        { label: tr('metrics.pitch'), value: `${fmt(pitchCm * 10)} mm/${i18n[currentLang].turnsUnit}` },
+        { label: tr('metrics.dcResistance'), value: `${fmt(resistance)} Ω (${materialName[material]()})` }
+      ]);
+
+      let note = '';
+      if (wireDiameterCm > 0 && turns > maxCloseTurns * 1.03) {
+        note = i18n[currentLang].notes.directTooManyTurns(fmt(coilLengthCm), fmt(maxCloseTurns));
+      }
+      setNote(note);
+    }
+
+    function calculateTarget(event) {
+      event?.preventDefault();
+      const targetMicroHenry = inductanceToMicroHenry($('target-l').value, $('target-l-unit').value);
+      const bareDiameterCm = lengthToCm($('target-diameter').value, $('target-diameter-unit').value);
+      const wireCm = lengthToCm($('target-wire').value, $('target-wire-unit').value);
+      const gapCm = lengthToCm($('target-gap').value, $('target-gap-unit').value);
+      const pitchCm = wireCm + gapCm;
+      const centerDiameterCm = bareDiameterCm + wireCm;
+      const outerDiameterCm = bareDiameterCm + (2 * wireCm);
+
+      if (!requirePositive([targetMicroHenry, bareDiameterCm, wireCm]) || !Number.isFinite(gapCm) || gapCm < 0) {
+        $('main-result').textContent = tr('resultLabels.requiredInput');
+        setMetrics([]);
+        setNote(tr('notes.targetRequired'));
+        return;
+      }
+
+      const turns = solveCloseWoundTurns(targetMicroHenry, centerDiameterCm, pitchCm);
+      const roundedTurns = Math.ceil(turns);
+      const coilLengthCm = turns * pitchCm;
+      const roundedLengthCm = roundedTurns * pitchCm;
+      const actualRounded = wheelerMicroHenry(centerDiameterCm, roundedLengthCm, roundedTurns);
+      const wireLengthM = helicalWireLengthMeters(centerDiameterCm, pitchCm, turns);
+      const roundedWireLengthM = helicalWireLengthMeters(centerDiameterCm, pitchCm, roundedTurns);
+
+      $('main-label').textContent = tr('resultLabels.requiredTurns');
+      $('main-result').textContent = `${fmt(turns)} ${i18n[currentLang].turnsUnit}`;
+      setMetrics([
+        { label: tr('metrics.practicalTurns'), value: `${roundedTurns} ${i18n[currentLang].turnsUnit}` },
+        { label: tr('metrics.coilDiameter'), value: `${fmt(bareDiameterCm * 10)} mm` },
+        { label: tr('metrics.formulaDiameter'), value: `${fmt(centerDiameterCm * 10)} mm` },
+        { label: tr('metrics.outerDiameter'), value: `${fmt(outerDiameterCm * 10)} mm` },
+        { label: tr('metrics.coilLength'), value: `${fmt(coilLengthCm)} cm` },
+        { label: tr('metrics.practicalLength'), value: `${fmt(roundedLengthCm)} cm` },
+        { label: tr('metrics.practicalResult'), value: `${fmt(actualRounded)} µH` },
+        { label: tr('metrics.wireLength'), value: `${fmt(wireLengthM)} m` },
+        { label: tr('metrics.practicalWireLength'), value: `${fmt(roundedWireLengthM)} m` }
+      ]);
+      setNote(i18n[currentLang].notes.targetResult(fmt(actualRounded)));
+    }
+
+    function findCompactCoil(targetMicroHenry, wireCm, gapCm, minBareDiameterCm, maxRatio, precision) {
+      const pitchCm = wireCm + gapCm;
+      const stepCm = precision === 'fine' ? 0.01 : precision === 'normal' ? 0.05 : 0.1;
+      const maxBareDiameterCm = Math.max(minBareDiameterCm * 40, minBareDiameterCm + 80);
+      let best = null;
+
+      for (let bareDiameterCm = minBareDiameterCm; bareDiameterCm <= maxBareDiameterCm; bareDiameterCm += stepCm) {
+        const centerDiameterCm = bareDiameterCm + wireCm;
+        const outerDiameterCm = bareDiameterCm + (2 * wireCm);
+        const turns = solveCloseWoundTurns(targetMicroHenry, centerDiameterCm, pitchCm);
+        const roundedTurns = Math.ceil(turns);
+        const coilLengthCm = roundedTurns * pitchCm;
+        const ratio = coilLengthCm / outerDiameterCm;
+        if (ratio > maxRatio) continue;
+
+        const actualMicroHenry = wheelerMicroHenry(centerDiameterCm, coilLengthCm, roundedTurns);
+        const volumeCm3 = coilVolumeCm3(outerDiameterCm, coilLengthCm);
+        const wireLengthM = helicalWireLengthMeters(centerDiameterCm, pitchCm, roundedTurns);
+        const candidate = {
+          bareDiameterCm,
+          centerDiameterCm,
+          outerDiameterCm,
+          turns,
+          roundedTurns,
+          coilLengthCm,
+          ratio,
+          actualMicroHenry,
+          volumeCm3,
+          wireLengthM
+        };
+
+        if (!best || candidate.volumeCm3 < best.volumeCm3) {
+          best = candidate;
+        }
+      }
+
+      return best;
+    }
+
+    function calculateCompact(event) {
+      event?.preventDefault();
+      const targetMicroHenry = inductanceToMicroHenry($('compact-l').value, $('compact-l-unit').value);
+      const wireCm = lengthToCm($('compact-wire').value, $('compact-wire-unit').value);
+      const gapCm = lengthToCm($('compact-gap').value, $('compact-gap-unit').value);
+      const minBareDiameterCm = lengthToCm($('compact-min-diameter').value, $('compact-min-diameter-unit').value);
+      const maxRatio = Number($('compact-max-ratio').value);
+      const precision = $('compact-precision').value;
+
+      if (!requirePositive([targetMicroHenry, wireCm, minBareDiameterCm, maxRatio]) || !Number.isFinite(gapCm) || gapCm < 0) {
+        $('main-result').textContent = tr('resultLabels.requiredInput');
+        setMetrics([]);
+        setNote(tr('notes.compactRequired'));
+        return;
+      }
+
+      const best = findCompactCoil(targetMicroHenry, wireCm, gapCm, minBareDiameterCm, maxRatio, precision);
+      if (!best) {
+        $('main-label').textContent = tr('resultLabels.candidate');
+        $('main-result').textContent = tr('resultLabels.notFound');
+        setMetrics([]);
+        setNote(tr('notes.compactNotFound'));
+        return;
+      }
+
+      $('main-label').textContent = tr('resultLabels.suggestedDiameter');
+      $('main-result').textContent = `${fmt(best.bareDiameterCm * 10)} mm`;
+      setMetrics([
+        { label: tr('metrics.turnCount'), value: `${best.roundedTurns} ${i18n[currentLang].turnsUnit}` },
+        { label: tr('metrics.formulaDiameter'), value: `${fmt(best.centerDiameterCm * 10)} mm` },
+        { label: tr('metrics.outerDiameter'), value: `${fmt(best.outerDiameterCm * 10)} mm` },
+        { label: tr('metrics.coilLength'), value: `${fmt(best.coilLengthCm * 10)} mm` },
+        { label: tr('metrics.calculatedInductance'), value: `${fmt(best.actualMicroHenry)} µH` },
+        { label: tr('metrics.volume'), value: `${fmt(best.volumeCm3)} cm³` },
+        { label: tr('metrics.ratio'), value: fmt(best.ratio) },
+        { label: tr('metrics.wireLength'), value: `${fmt(best.wireLengthM)} m` }
+      ]);
+      setNote(i18n[currentLang].notes.compactResult(fmt(minBareDiameterCm * 10), fmt(maxRatio)));
+    }
+
+    function calculateRf(event) {
+      event?.preventDefault();
+      const capacitanceF = capacitanceToFarad($('rf-capacitance').value, $('rf-capacitance-unit').value);
+      const frequencyHz = frequencyToHz($('rf-frequency').value, $('rf-frequency-unit').value);
+      const wireCm = lengthToCm($('rf-wire').value, $('rf-wire-unit').value);
+      const gapCm = lengthToCm($('rf-gap').value, $('rf-gap-unit').value);
+      const minBareDiameterCm = lengthToCm($('rf-min-diameter').value, $('rf-min-diameter-unit').value);
+      const maxRatio = Number($('rf-max-ratio').value);
+      const precision = $('rf-precision').value;
+      const tankZ = Number($('rf-tank-z').value);
+      const ropt = Number($('rf-ropt').value);
+
+      if (!requirePositive([capacitanceF, frequencyHz, wireCm, minBareDiameterCm, maxRatio])) {
+        $('main-result').textContent = tr('resultLabels.requiredInput');
+        setMetrics([]);
+        setNote(tr('notes.rfRequired'));
+        return;
+      }
+      if (!Number.isFinite(gapCm) || gapCm < 0) {
+        $('main-result').textContent = tr('resultLabels.requiredInput');
+        setMetrics([]);
+        setNote(tr('notes.negativeGap'));
+        return;
+      }
+
+      const targetMicroHenry = resonanceInductanceMicroHenry(capacitanceF, frequencyHz);
+      const reactance = rfReactanceOhm(capacitanceF, frequencyHz);
+      const characteristicZ = Math.sqrt((targetMicroHenry / 1000000) / capacitanceF);
+      const best = findCompactCoil(targetMicroHenry, wireCm, gapCm, minBareDiameterCm, maxRatio, precision);
+
+      $('main-label').textContent = tr('resultLabels.requiredL');
+      $('main-result').textContent = `${fmt(targetMicroHenry)} µH`;
+
+      const metrics = [
+        { label: tr('metrics.reactance'), value: `${fmt(reactance)} Ω` },
+        { label: tr('metrics.characteristicZ'), value: `${fmt(characteristicZ)} Ω` }
+      ];
+
+      if (best) {
+        metrics.push(
+          { label: tr('metrics.coilDiameter'), value: `${fmt(best.bareDiameterCm * 10)} mm` },
+          { label: tr('metrics.totalTurns'), value: `${best.roundedTurns} ${i18n[currentLang].turnsUnit}` },
+          { label: tr('metrics.coilLength'), value: `${fmt(best.coilLengthCm * 10)} mm` },
+          { label: tr('metrics.outerDiameter'), value: `${fmt(best.outerDiameterCm * 10)} mm` },
+          { label: tr('metrics.volume'), value: `${fmt(best.volumeCm3)} cm³` },
+          { label: tr('metrics.practicalL'), value: `${fmt(best.actualMicroHenry)} µH` }
+        );
+      }
+
+      let note = tr('notes.rfBase');
+      if (requirePositive([tankZ, ropt])) {
+        const tapFraction = Math.sqrt(ropt / tankZ);
+        const reflectedAtFullCoil = ropt / (tapFraction * tapFraction);
+        metrics.push(
+          { label: tr('metrics.tapRatio'), value: `${fmt(tapFraction)} (${fmt(tapFraction * 100)}%)` },
+          { label: tr('metrics.impedanceRatio'), value: `${fmt(tankZ / ropt)} : 1` }
+        );
+
+        if (best && tapFraction <= 1) {
+          const lowerTurns = best.roundedTurns * tapFraction;
+          const upperTurns = best.roundedTurns - lowerTurns;
+          metrics.push(
+            { label: tr('metrics.n1'), value: `${fmt(lowerTurns)} ${i18n[currentLang].turnsUnit}` },
+            { label: tr('metrics.n2'), value: `${fmt(upperTurns)} ${i18n[currentLang].turnsUnit}` }
+          );
+        }
+
+        if (tapFraction > 1) {
+          note += i18n[currentLang].notes.tapImpossible(fmt(ropt), fmt(tankZ), fmt(tapFraction));
+        } else {
+          note += i18n[currentLang].notes.tapResult(fmt(reflectedAtFullCoil));
+        }
+      } else {
+        note += tr('notes.tapRequired');
+      }
+
+      setMetrics(metrics);
+      if (!best) {
+        note += tr('notes.rfNoCoil');
+      }
+      setNote(note);
+    }
+
+    function setMode(mode) {
+      const direct = mode === 'direct';
+      const target = mode === 'target';
+      const compact = mode === 'compact';
+      const rf = mode === 'rf';
+      $('direct-form').classList.toggle('hidden', !direct);
+      $('target-form').classList.toggle('hidden', !target);
+      $('compact-form').classList.toggle('hidden', !compact);
+      $('rf-form').classList.toggle('hidden', !rf);
+      $('tab-direct').classList.toggle('active', direct);
+      $('tab-target').classList.toggle('active', target);
+      $('tab-compact').classList.toggle('active', compact);
+      $('tab-rf').classList.toggle('active', rf);
+      $('tab-direct').setAttribute('aria-selected', String(direct));
+      $('tab-target').setAttribute('aria-selected', String(target));
+      $('tab-compact').setAttribute('aria-selected', String(compact));
+      $('tab-rf').setAttribute('aria-selected', String(rf));
+      if (direct) calculateDirect();
+      if (target) calculateTarget();
+      if (compact) calculateCompact();
+      if (rf) calculateRf();
+    }
+
+    $('direct-form').addEventListener('submit', calculateDirect);
+    $('target-form').addEventListener('submit', calculateTarget);
+    $('compact-form').addEventListener('submit', calculateCompact);
+    $('rf-form').addEventListener('submit', calculateRf);
+    $('tab-direct').addEventListener('click', () => setMode('direct'));
+    $('tab-target').addEventListener('click', () => setMode('target'));
+    $('tab-compact').addEventListener('click', () => setMode('compact'));
+    $('tab-rf').addEventListener('click', () => setMode('rf'));
+    $('language-select').addEventListener('change', (event) => {
+      currentLang = event.target.value;
+      applyTranslations();
+    });
+
+    $('direct-example').addEventListener('click', () => {
+      $('direct-diameter').value = 2;
+      $('direct-diameter-unit').value = 'cm';
+      $('direct-length').value = 1;
+      $('direct-length-unit').value = 'cm';
+      $('direct-turns').value = 10;
+      $('direct-wire').value = 0.8;
+      $('direct-wire-unit').value = 'mm';
+      calculateDirect();
+    });
+
+    $('target-example').addEventListener('click', () => {
+      $('target-l').value = 10;
+      $('target-l-unit').value = 'uH';
+      $('target-diameter').value = 3;
+      $('target-diameter-unit').value = 'cm';
+      $('target-wire').value = 0.8;
+      $('target-wire-unit').value = 'mm';
+      $('target-gap').value = 0;
+      calculateTarget();
+    });
+
+    $('compact-example').addEventListener('click', () => {
+      $('compact-l').value = 10;
+      $('compact-l-unit').value = 'uH';
+      $('compact-wire').value = 0.8;
+      $('compact-wire-unit').value = 'mm';
+      $('compact-gap').value = 0;
+      $('compact-gap-unit').value = 'mm';
+      $('compact-min-diameter').value = 10;
+      $('compact-min-diameter-unit').value = 'mm';
+      $('compact-max-ratio').value = 3;
+      $('compact-precision').value = 'fine';
+      calculateCompact();
+    });
+
+    $('rf-example').addEventListener('click', () => {
+      $('rf-capacitance').value = 100;
+      $('rf-capacitance-unit').value = 'pF';
+      $('rf-frequency').value = 13.56;
+      $('rf-frequency-unit').value = 'MHz';
+      $('rf-wire').value = 0.8;
+      $('rf-wire-unit').value = 'mm';
+      $('rf-gap').value = 0;
+      $('rf-gap-unit').value = 'mm';
+      $('rf-min-diameter').value = 10;
+      $('rf-min-diameter-unit').value = 'mm';
+      $('rf-max-ratio').value = 3;
+      $('rf-precision').value = 'fine';
+      $('rf-tank-z').value = 1000;
+      $('rf-ropt').value = 50;
+      calculateRf();
+    });
+
+    document.querySelectorAll('input, select').forEach((field) => {
+      if (field.id === 'language-select') return;
+      const recalculate = () => {
+        if (!$('direct-form').classList.contains('hidden')) calculateDirect();
+        if (!$('target-form').classList.contains('hidden')) calculateTarget();
+        if (!$('compact-form').classList.contains('hidden')) calculateCompact();
+        if (!$('rf-form').classList.contains('hidden')) calculateRf();
+      };
+      field.addEventListener('input', recalculate);
+      field.addEventListener('change', recalculate);
+    });
+
+    applyTranslations();
+  </script>
+</body>
+</html>
