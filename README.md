@@ -2,6 +2,10 @@
 
 A browser-based calculator for practical single-layer air-core coil design.
 
+## Live Demo
+
+[Open the calculator on GitHub Pages](https://ercanturhan.github.io/bobin-enduktans-hesaplayicisi/)
+
 ## Features
 
 - Calculate inductance from coil diameter, winding length, wire diameter, and turn count
