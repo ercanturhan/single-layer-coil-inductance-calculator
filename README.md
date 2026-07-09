@@ -4,7 +4,7 @@ A browser-based calculator for practical single-layer air-core coil design.
 
 ## Live Demo
 
-[Open the calculator on GitHub Pages](https://ercanturhan.github.io/bobin-enduktans-hesaplayicisi/)
+[Open the calculator on GitHub Pages](https://ercanturhan.github.io/single-layer-coil-inductance-calculator/)
 
 ## Features
 
